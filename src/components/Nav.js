@@ -20,7 +20,7 @@ export default function Nav() {
 
 
   return (
-    <div className='flex justify-between items-center p-4 bg-[#1E2D44] text-white font-montserrat font-thin'>
+    <div className='flex justify-between items-center p-6 bg-[#1E2D44] text-white font-montserrat font-thin'>
       <div>
         Walhez Co
       </div>
