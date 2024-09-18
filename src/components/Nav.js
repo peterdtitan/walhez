@@ -20,7 +20,7 @@ export default function Nav() {
 
 
   return (
-    <div className='flex justify-between items-center p-6 bg-[#1E2D44] text-white font-montserrat font-thin'>
+    <div className='flex justify-between items-center p-6 bg-background text-white font-thin'>
       <div>
         Walhez Co
       </div>
@@ -99,7 +99,7 @@ export default function Nav() {
       */}
 
       <div className='items-center hidden md:flex'>
-        <button className='bg-[#F2C94C] px-4 py-1 text-[#1E2D44] font-normal rounded-md'>CONTACT US</button>
+        <button className='bg-primaryYellow px-4 py-1 text-background font-normal rounded-md'>CONTACT US</button>
       </div>
     </div>
   )
