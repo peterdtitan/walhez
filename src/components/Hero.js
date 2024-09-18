@@ -20,7 +20,7 @@ export default function Hero() {
 
       <div className='flex flex-col md:ml-8 cursor-default items-center leading-loose justify-center md:items-start md:justify-center text-center md:text-left md:w-1/2 gap-6'>
         <h1 className='text-3xl md:text-4xl lg:text-5xl text-white font-normal'>
-          Strategy. Strength <br/> Safety.
+          Speed. Efficiency <br/> Safety.
         </h1>
         <h2 className='text-lg md:text-xl text-gray-300'>
           Walhez Group gets the job done.

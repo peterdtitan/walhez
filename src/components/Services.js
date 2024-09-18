@@ -8,7 +8,7 @@ import heroImg from "../../public/payloader.jpg";
 
 export default function Services() {
   return (
-    <div className='mb-10'>
+    <div className=''>
         <div className='bg-hero-pattern pb-12 bg-cover cursor-default'>
             <div className='flex flex-col justify-center items-center text-center gap-4'>
                 <h3 className='mt-20 md:mt-36 max-w-[70%] md:max-w-[50%] leading-loose text-base md:text-md'>
@@ -59,7 +59,7 @@ export default function Services() {
             </div>
 
         </div>
-        <div className='mt-2 py-10 bg-primaryGrey mx-8 md:mx-20 flex flex-col items-center gap-6 md:gap-16'>
+        <div className='mt-2 py-10 pb-44 bg-primaryGrey mx-8 md:mx-20 flex flex-col items-center gap-6 md:gap-16'>
             <h2 className='font-normal text-center italic text-md md:text-2xl'>
                  Currently servicing up to 10 cities
             </h2>
