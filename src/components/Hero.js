@@ -9,7 +9,7 @@ import heroImg from "../../public/payloader.jpg";
 export default function Hero() {
   return (
     <div className='relative flex flex-col md:flex-row gap-10 justify-between md:h-[380px] bg-background font-montserrat pb-12 md:pb-0'>
-      <div className="relative md:w-1/2 h-[300px] md:h-[420px] md:mt-8 rounded-md">
+      <div className="relative md:w-1/2 h-[300px] md:h-[420px] md:mt-8">
         <Image 
           className="object-cover w-full h-full md:rounded-md" 
           src={heroImg} 

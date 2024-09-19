@@ -11,7 +11,7 @@ export default function Services() {
     <div className=''>
         <div className='bg-hero-pattern pb-12 bg-cover cursor-default'>
             <div className='flex flex-col justify-center items-center text-center gap-4'>
-                <h3 className='mt-20 md:mt-36 max-w-[70%] md:max-w-[50%] leading-loose text-base md:text-md'>
+                <h3 className='mt-20 md:mt-36 max-w-[80%] md:max-w-[50%] leading-loose text-background text-sm md:text-base'>
                     The Walhez Group is a team of construction, heavy-machine renting, <br/> and contracting professionals 
                     dedicated to creating solution-oriented <br/> services for projects that need a reliable and timely partner.
                 </h3>
