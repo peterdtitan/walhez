@@ -1,4 +1,3 @@
-// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 import {nextui} from "@nextui-org/react";
 
@@ -13,9 +12,18 @@ const config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
+        background: "#1E2D44",
         foreground: "var(--foreground)",
+        primaryRed: "#bc1c21",
+        primaryYellow: "#F2C94C",
+        primaryGrey: "#F4F4F4",
       },
+      fontFamily: {
+        montserrat: ['montserrat', 'sans-serif'],
+      },
+      backgroundImage: {
+        'hero-pattern': "url('/constructionBg.jpg')",
+      }
     },
   },
   plugins: [nextui()],
