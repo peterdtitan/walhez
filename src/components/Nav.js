@@ -9,7 +9,12 @@ export default function Nav() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
 
-  const navItems = ["ABOUT US", "PROJECTS", "SERVICES", "EQUIPMENT"];
+  const navItems = [
+    { name: "HOME", path: "/" },
+    { name: "ABOUT US", path: "/about" },
+    { name: "PROJECTS", path: "/projects" },
+    { name: "EQUIPMENT", path: "/equipment" },
+  ];
 
   const linkVariants = {
     hover: { scale: 1.03 },
@@ -23,18 +28,11 @@ export default function Nav() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsNavbarVisible(false);
-      } else {
-        setIsNavbarVisible(true);
-      }
-
+      setIsNavbarVisible(currentScrollY <= lastScrollY || currentScrollY <= 100);
       setLastScrollY(currentScrollY);
     };
 
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
@@ -46,7 +44,7 @@ export default function Nav() {
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="fixed top-0 left-0 w-full bg-[#1E2D44] text-white font-thin p-6 flex justify-between items-center z-50 shadow-md"
       >
-        <Link href='/' className="text-lg font-semibold">Walhez Co</Link>
+        <Link href="/" className="text-lg font-semibold">Walhez Co</Link>
 
         {/* Desktop Menu */}
         <div className="hidden sm:flex tracking-widest text-base font-thin">
@@ -60,17 +58,17 @@ export default function Nav() {
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <Link
-                  href={`/${item === "ABOUT US" ? "about" : item.toLowerCase()}`}
+                  href={item.path}
                   className="hover:underline hover:underline-offset-8 hover:decoration-yellow-400 hover:text-yellow-400 transition-all"
                 >
-                  {item}
+                  {item.name}
                 </Link>
               </motion.li>
             ))}
           </ul>
         </div>
 
-        {/* Mobile */}
+        {/* Mobile Menu Button */}
         <div className="sm:hidden flex items-center">
           <button
             className="text-white focus:outline-none"
@@ -93,10 +91,13 @@ export default function Nav() {
           </button>
         </div>
 
+        {/* Contact Button (Desktop) */}
         <div className="items-center hidden md:flex">
-          <button className="bg-primaryYellow px-4 py-1 text-background font-normal rounded-md">
-            CONTACT US
-          </button>
+          <Link href="/contact">
+            <button className="bg-primaryYellow px-4 py-1 text-[#1E2D44] font-normal rounded-md">
+              CONTACT US
+            </button>
+          </Link>
         </div>
       </motion.div>
 
@@ -120,17 +121,19 @@ export default function Nav() {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <Link
-                  href={`/${item === "ABOUT US" ? "about" : item.toLowerCase()}`}
+                    href={item.path}
                     className="block text-white hover:text-yellow-400 transition-all"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    {item}
+                    {item.name}
                   </Link>
                 </motion.li>
               ))}
-              <button className="bg-[#F2C94C] px-4 py-2 text-[#1E2D44] font-normal rounded-md">
-                CONTACT US
-              </button>
+              <Link href="/contact">
+                <button className="bg-[#F2C94C] px-4 py-2 text-[#1E2D44] font-normal rounded-md">
+                  CONTACT US
+                </button>
+              </Link>
             </ul>
           </motion.div>
         )}

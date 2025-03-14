@@ -1,10 +1,13 @@
 import React from 'react'
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { MdArrowRightAlt, MdForklift } from "react-icons/md";
 import { AiOutlineGlobal } from "react-icons/ai";
 
-import heroImg from "../../public/payloader.jpg";
+import img1 from "../../public/d6h.png";
+import img2 from "../../public/payloader.jpg";
+import img3 from "../../public/swampbuggy.png";
 
 export default function Services() {
   return (
@@ -15,10 +18,12 @@ export default function Services() {
                     The Walhez Group is a team of construction, heavy-machine renting, <br/> and contracting professionals 
                     dedicated to creating solution-oriented <br/> services for projects that need a reliable and timely partner.
                 </h3>
-                <button className="text-primaryRed md:text-lg flex gap-2 items-center underline underline-offset-4">
-                    Get to know us
-                    <MdArrowRightAlt />
-                </button>
+                <Link href='/about'>
+                    <button className="text-primaryRed md:text-lg flex gap-2 items-center underline underline-offset-4">
+                        Get to know us
+                        <MdArrowRightAlt />
+                    </button>
+                </Link>
             </div>
             <div className='flex flex-col mx-8 md:mx-20 mt-14 md:mt-10 font-normal'>
                 <div className='bg-slate-300/80 flex items-center text-base md:text-3xl px-4 py-6 md:px-6 md:py-10 w-[200px] md:w-[400px] -mb-10 md:-mb-12 -ml-2 z-10'
@@ -28,20 +33,20 @@ export default function Services() {
                     </h1>
                 </div>
                 <div className='mt-6 flex flex-col md:flex-row gap-2 z-20'>
-                    <div className='md:w-[50%] h-[200px] md:h-[410px]'>
+                    <div className='md:w-[50%] h-[200px] md:h-[410px] bg-white/70'>
                         <Image 
                             className="object-cover w-full h-full" 
-                            src={heroImg} 
+                            src={img1} 
                             alt="devices" 
                             priority
                         />
                     </div>
 
                     <div className='md:w-1/2 flex flex-col gap-2'>
-                        <div className='md:w-full h-[200px]'>
+                        <div className='md:w-full h-[200px] bg-white'>
                             <Image 
                                 className="object-cover w-full h-full" 
-                                src={heroImg} 
+                                src={img2} 
                                 alt="devices" 
                                 priority
                             />
@@ -49,7 +54,7 @@ export default function Services() {
                         <div className='md:w-full h-[200px]'>
                             <Image 
                                 className="object-cover w-full h-full" 
-                                src={heroImg} 
+                                src={img3} 
                                 alt="devices" 
                                 priority
                             />
@@ -86,10 +91,12 @@ export default function Services() {
                             Whatever the heavy-duty equipment is, we will get it to you.
                             View our available equipment and get in touch today.
                         </p>
-                        <button className="text-primaryRed text-sm md:text-base lg:text-lg mt-6 flex gap-2 items-center underline underline-offset-4">
-                            Contact us for a quote
-                            <MdArrowRightAlt />
-                        </button>
+                        <Link href='/contact'>
+                            <button className="text-primaryRed text-sm md:text-base lg:text-lg mt-6 flex gap-2 items-center underline underline-offset-4">
+                                Contact us for a quote
+                                <MdArrowRightAlt />
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </div>

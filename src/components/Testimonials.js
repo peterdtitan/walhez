@@ -1,8 +1,9 @@
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { MdOutlineArrowForwardIos } from "react-icons/md";
 
-import heroImg from "../../public/payloader.jpg";
+import img1 from "../../public/d6h.png";
 
 export default function Testimonials() {
   return (
@@ -15,18 +16,20 @@ export default function Testimonials() {
                 <p className="text-xs text-black md:text-base font-thin">
                     We are a nimble team of specialists ready for just about anything.
                 </p>
-                <button className='flex items-center gap-2 -ml-1 md:-ml-5 transition-all text-xs md:text-lg font-normal 
-                    p-2 rounded-md bg-primaryYellow md:bg-transparent md:text-black hover:text-primaryYellow hover:underline'
-                >
-                    <MdOutlineArrowForwardIos className='text-base md:text-4xl font-bold md:text-primaryYellow'/>
-                    Find the right service
-                </button>
+                <Link href='/contact'>
+                    <button className='flex items-center gap-2 -ml-1 md:-ml-5 transition-all text-xs md:text-lg font-normal 
+                        p-2 rounded-md bg-primaryYellow md:bg-transparent md:text-black hover:text-primaryYellow hover:underline'
+                    >
+                        <MdOutlineArrowForwardIos className='text-base md:text-4xl font-bold md:text-primaryYellow'/>
+                        Find the right service
+                    </button>
+                </Link>
 
             </div>
             <div className="relative md:w-[50%] md:h-[450px]">
                     <Image 
                       className="object-cover w-full h-full" 
-                      src={heroImg} 
+                      src={img1} 
                       alt="devices" 
                       priority
                     />

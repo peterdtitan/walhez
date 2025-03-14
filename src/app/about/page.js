@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { MdOutlineArrowForwardIos } from "react-icons/md";
 
+
 import { team } from "@/utils/data";
 import Image from "next/image";
+import Link from 'next/link';
 
 export default function Page() {
   const fadeInVariants = {
@@ -155,19 +157,20 @@ export default function Page() {
         Partnering with Walhez Group means gaining access to a trusted resource that prioritizes 
         your project&apos;s success. We look forward to the opportunity to support your operations and contribute to your achievements.
       </motion.h3>
-
-      {/* TODO: Change CTA Button */}
-      <motion.button
-        ref={partnerRef}
-        variants={fadeInVariants}
-        initial="hidden"
-        animate={partnerInView ? "visible" : "hidden"}
-        className="flex items-center gap-2 -mt-8 -ml-4 transition-all text-base md:text-lg font-normal 
-          p-2 mx-10 rounded-md bg-primaryYellow md:bg-transparent hover:text-primaryYellow hover:underline backdrop-blur-sm"
-      >
-        <MdOutlineArrowForwardIos className='text-base md:text-4xl font-bold hover:text-primaryYellow'/>
-        Discover our services
-      </motion.button>
+      
+      <Link href="/contact">
+        <motion.button
+          ref={partnerRef}
+          variants={fadeInVariants}
+          initial="hidden"
+          animate={partnerInView ? "visible" : "hidden"}
+          className="flex items-center gap-2 -mt-8 transition-all text-base md:text-lg font-normal 
+            p-2 rounded-md bg-primaryYellow md:bg-transparent hover:text-primaryYellow hover:underline backdrop-blur-sm"
+        >
+          <MdOutlineArrowForwardIos className='text-base md:text-4xl font-bold hover:text-primaryYellow'/>
+          Discover our services
+        </motion.button>
+      </Link>
     </div>
   );
 }
