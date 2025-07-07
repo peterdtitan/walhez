@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Nav() {
@@ -40,11 +41,21 @@ export default function Nav() {
     <>
       <motion.div
         initial={{ y: 0 }}
-        animate={{ y: isNavbarVisible ? 0 : "-100%" }}
+        animate={{ y: isNavbarVisible || isMobileMenuOpen ? 0 : "-100%" }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed top-0 left-0 w-full bg-[#1E2D44] text-white font-thin p-6 flex justify-between items-center z-50 shadow-md"
+        className="fixed top-0 left-0 w-full bg-[#1E2D44] text-white font-thin px-6 py-2 flex justify-between items-center z-50 shadow-md"
       >
-        <Link href="/" className="text-lg font-semibold">Walhez Co</Link>
+        <Link href="/" className="text-lg">
+          <div className="flex gap-2 items-center">
+            <Image
+              src='/logo.png'
+              alt="Walhez Co Logo"
+              width={80}
+              height={80}
+            />
+            <p>WALHEZ</p>
+          </div>
+        </Link>
 
         {/* Desktop Menu */}
         <div className="hidden sm:flex tracking-widest text-base font-thin">
@@ -109,7 +120,7 @@ export default function Nav() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute top-[70px] left-0 w-full bg-[#1E2D44] sm:hidden z-40 shadow-md"
+            className="fixed top-[70px] left-0 w-full bg-[#1E2D44] sm:hidden z-40 shadow-md"
           >
             <ul className="flex flex-col items-center gap-4 p-6">
               {navItems.map((item, index) => (
