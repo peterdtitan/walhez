@@ -3,14 +3,23 @@
 import React from 'react';
 import Link from 'next/link';
 import { RiFacebookBoxLine, RiTwitterLine, RiInstagramLine } from 'react-icons/ri';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
     <div className="flex flex-col w-full bg-[#1E2D44] text-slate-300 font-montserrat pt-20 p-16 pb-8 gap-10 font-thin">
       <div className="grid grid-cols-2 gap-6 md:flex md:justify-between md:items-start">
-        {/* Placeholder for Logo */}
-        <div className="w-[200px] h-[200px] md:hidden lg:flex col-span-2 relative -mt-16">
-          {/** Await Logo Arts and update here. */}
+        <div className="w-[300px] h-[200px] hidden md:flex items-center col-span-2 relative -mt-16">
+          <Image 
+            src='/logo.png'
+            width={80}
+            height={80} 
+            className="w-48 object-cover" 
+            alt="logo" />
+          <div className='text-xs py-2'>
+            <p className='font-semibold'>Walhez Group.</p>
+            <p>Licensed & Registered</p>
+          </div>
         </div>
 
         {/* Sitemap */}
