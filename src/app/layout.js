@@ -1,8 +1,5 @@
 import {Providers} from "./providers";
-import Navbar from "../components/Nav"
-import Footer from "../components/Footer"
-
-import localFont from "next/font/local";
+import AppFrame from "@/components/AppFrame";
 import "./globals.css";
 
 export const metadata = {
@@ -15,12 +12,9 @@ export default function RootLayout({ children }) {
     <html lang="en" className="h-full">
       <body className="font-montserrat flex flex-col min-h-screen">
         <Providers>
-          <Navbar />
-          <main className="flex-1 w-full mt-16 md:mt-20">{children}</main>
-          <Footer />
+          <AppFrame>{children}</AppFrame>
         </Providers>
       </body>
     </html>
   );
 }
-

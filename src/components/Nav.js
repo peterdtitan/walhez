@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Nav() {
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
@@ -37,13 +39,17 @@ export default function Nav() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <>
       <motion.div
         initial={{ y: 0 }}
         animate={{ y: isNavbarVisible || isMobileMenuOpen ? 0 : "-100%" }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed top-0 left-0 w-full bg-[#1E2D44] text-white font-thin px-6 py-2 flex justify-between items-center z-50 shadow-md"
+        className="fixed top-0 left-0 w-full bg-[#1E2D44] text-white font-thin px-6 py-2 flex justify-between items-center z-50 shadow-md print:hidden"
       >
         <Link href="/" className="text-lg">
           <div className="flex gap-2 items-center">
@@ -120,7 +126,7 @@ export default function Nav() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed top-[70px] left-0 w-full bg-[#1E2D44] sm:hidden z-40 shadow-md"
+            className="fixed top-[70px] left-0 w-full bg-[#1E2D44] sm:hidden z-40 shadow-md print:hidden"
           >
             <ul className="flex flex-col items-center gap-4 p-6">
               {navItems.map((item, index) => (
