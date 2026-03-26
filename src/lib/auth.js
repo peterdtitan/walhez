@@ -84,8 +84,6 @@ export async function getAuthenticatedAdmin() {
         where: { token },
       });
     }
-
-    cookies().delete(ADMIN_SESSION_COOKIE);
     return null;
   }
 

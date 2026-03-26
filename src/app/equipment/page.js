@@ -1,6 +1,8 @@
 import EquipmentShowcase from "@/components/EquipmentShowcase";
 import { getAllEquipment } from "@/lib/walhez-data";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Equipment | Walhez",
   description: "Browse Walhez equipment sourced from the server database.",

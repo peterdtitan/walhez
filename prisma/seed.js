@@ -1,4 +1,4 @@
-const { PrismaClient, ImageSource, ReportCategory, ReportType } = require("@prisma/client");
+const { PrismaClient, ImageSource } = require("@prisma/client");
 const { scryptSync, randomBytes } = require("crypto");
 
 const prisma = new PrismaClient();
@@ -145,57 +145,6 @@ async function main() {
     });
   }
 
-  const seededEquipment = await prisma.equipment.findMany({
-    orderBy: { createdAt: "asc" },
-    take: 2,
-  });
-
-  if (seededEquipment.length === 2) {
-    const sampleEntries = [
-      {
-        equipmentId: seededEquipment[0].id,
-        type: ReportType.EXPENSE,
-        category: ReportCategory.OPERATIONAL_EXPENSE,
-        title: "Daily diesel supply",
-        description: "Diesel purchased for six-day operating cycle.",
-        amount: 568000,
-        entryDate: new Date(),
-      },
-      {
-        equipmentId: seededEquipment[0].id,
-        type: ReportType.EXPENSE,
-        category: ReportCategory.PREVENTIVE_MAINTENANCE,
-        title: "Scheduled service parts",
-        description: "Filters and consumables replaced during planned maintenance.",
-        amount: 185000,
-        entryDate: new Date(),
-      },
-      {
-        equipmentId: seededEquipment[1].id,
-        type: ReportType.INCOME,
-        category: ReportCategory.RENTAL_INCOME,
-        title: "Equipment rental invoice",
-        description: "Weekly payloader deployment to client site.",
-        amount: 850000,
-        entryDate: new Date(),
-      },
-    ];
-
-    for (const entry of sampleEntries) {
-      const exists = await prisma.reportEntry.findFirst({
-        where: {
-          equipmentId: entry.equipmentId,
-          type: entry.type,
-          category: entry.category,
-          title: entry.title,
-        },
-      });
-
-      if (!exists) {
-        await prisma.reportEntry.create({ data: entry });
-      }
-    }
-  }
 }
 
 main()

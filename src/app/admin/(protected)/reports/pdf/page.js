@@ -2,6 +2,8 @@ import { getOperationsReportData } from "@/lib/walhez-data";
 import OperationsReport from "@/components/OperationsReport";
 import ReportPdfButton from "@/components/ReportPdfButton";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Admin Reports PDF | Walhez",
   description: "Print-friendly protected equipment income and expense reporting.",
