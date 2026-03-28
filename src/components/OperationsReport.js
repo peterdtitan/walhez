@@ -66,7 +66,7 @@ export default function OperationsReport({
   initialCustomEndDate,
 }) {
   const [selectedEquipmentId, setSelectedEquipmentId] = useState(
-    initialEquipmentId || report.equipment[0]?.id || ""
+    initialEquipmentId || report.reportTargets[0]?.id || ""
   );
   const [typeFilter, setTypeFilter] = useState(initialTypeFilter);
   const [rangeFilter, setRangeFilter] = useState(initialRangeFilter);
@@ -90,17 +90,17 @@ export default function OperationsReport({
   );
 
   useEffect(() => {
-    if (!selectedEquipmentId && report.equipment[0]?.id) {
-      setSelectedEquipmentId(report.equipment[0].id);
+    if (!selectedEquipmentId && report.reportTargets[0]?.id) {
+      setSelectedEquipmentId(report.reportTargets[0].id);
     }
-  }, [report.equipment, selectedEquipmentId]);
+  }, [report.reportTargets, selectedEquipmentId]);
 
   const activeEquipment = useMemo(
     () =>
-      report.equipment.find((equipment) => equipment.id === selectedEquipmentId) ||
-      report.equipment[0] ||
+      report.reportTargets.find((equipment) => equipment.id === selectedEquipmentId) ||
+      report.reportTargets[0] ||
       null,
-    [report.equipment, selectedEquipmentId]
+    [report.reportTargets, selectedEquipmentId]
   );
 
   const dateWindow = useMemo(() => {
@@ -137,7 +137,9 @@ export default function OperationsReport({
       return [];
     }
 
-    return report.entries.filter((entry) => entry.equipmentId === activeEquipment.id);
+    return report.entries.filter(
+      (entry) => (entry.equipmentId || entry.reportTarget) === activeEquipment.id
+    );
   }, [activeEquipment, report.entries]);
 
   const filteredEntries = useMemo(() => {
@@ -253,6 +255,37 @@ export default function OperationsReport({
     <section className={pdfMode ? "bg-white" : "bg-[#f3efe5]"}>
       <div className={`px-4 py-6 md:px-8 ${pdfMode ? "print:px-0" : "md:py-8"}`}>
         <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.10)]">
+          {!pdfMode ? (
+            <div className="border-b border-slate-200 bg-white px-6 py-6 md:px-10">
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#9c3d2b]">
+                Report target position
+              </p>
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {report.reportTargets.map((equipment) => {
+                  const active = equipment.id === activeEquipment?.id;
+
+                  return (
+                    <button
+                      key={equipment.id}
+                      type="button"
+                      onClick={() => setSelectedEquipmentId(equipment.id)}
+                      className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+                        active
+                          ? "border-[#1E2D44] bg-[#102033] text-white"
+                          : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300"
+                      }`}
+                    >
+                      <p className="text-lg font-semibold">{equipment.name}</p>
+                      <p className={`mt-1 text-sm ${active ? "text-slate-300" : "text-slate-500"}`}>
+                        {equipment.description}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           <div className="relative overflow-hidden bg-[#1e2d44] px-6 py-8 text-white md:px-10 md:py-10">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(242,201,76,0.28),_transparent_32%),radial-gradient(circle_at_bottom_left,_rgba(156,61,43,0.24),_transparent_28%)]" />
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
@@ -261,15 +294,20 @@ export default function OperationsReport({
                   Operations report
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold md:text-5xl">
-                  {activeEquipment ? activeEquipment.name : "Equipment"} report ledger
+                  {activeEquipment ? activeEquipment.name : "Report target"} report ledger
                 </h1>
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">
-                  Review income and expense records for one equipment at a time, then narrow the ledger by rolling date window or a custom range.
+                  Review income and expense records for one report target at a time, then narrow the ledger by rolling date window or a custom range.
                 </p>
               </div>
 
               {!pdfMode ? (
                 <div className="flex flex-wrap gap-3 print:hidden">
+                  <ReportPdfButton
+                    label="Comprehensive PDF"
+                    href="/admin/reports/pdf/comprehensive"
+                    className="rounded-full border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:border-primaryYellow hover:text-primaryYellow"
+                  />
                   <ReportPdfButton
                     label="Print / Save as PDF"
                     href={pdfHref}
@@ -290,7 +328,7 @@ export default function OperationsReport({
             <SummaryCard
               label="Total income"
               value={formatCurrency(totals.income)}
-              note="Filtered revenue entries for the selected machine."
+              note="Filtered revenue entries for the selected target."
               accent="text-green-700"
             />
             <SummaryCard
@@ -302,77 +340,12 @@ export default function OperationsReport({
             <SummaryCard
               label="Entries"
               value={String(filteredEntries.length)}
-              note={activeEquipment ? `${activeEquipment.name} • ${activeEquipment.company} ${activeEquipment.model}` : "No equipment records found yet."}
+              note={activeEquipment ? `${activeEquipment.name} • ${activeEquipment.description}` : "No report target records found yet."}
               accent="text-slate-900"
             />
           </div>
 
-          <div className={`grid gap-6 px-6 py-8 md:px-10 ${pdfMode ? "" : "xl:grid-cols-[0.7fr_1.3fr]"}`}>
-            {!pdfMode ? (
-            <div className="space-y-6">
-              <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#9c3d2b]">
-                  Equipment list
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-                  Select equipment
-                </h2>
-
-                <div className="mt-6 space-y-3">
-                  {report.equipment.map((equipment) => {
-                    const active = equipment.id === activeEquipment?.id;
-
-                    return (
-                      <button
-                        key={equipment.id}
-                        type="button"
-                        onClick={() => setSelectedEquipmentId(equipment.id)}
-                        className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                          active
-                            ? "border-[#1E2D44] bg-[#102033] text-white"
-                            : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300"
-                        }`}
-                      >
-                        <p className="text-lg font-semibold">{equipment.name}</p>
-                        <p className={`mt-1 text-sm ${active ? "text-slate-300" : "text-slate-500"}`}>
-                          {equipment.company} {equipment.model}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#9c3d2b]">
-                  Reporting notes
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-                  What is captured
-                </h2>
-
-                <div className="mt-6 grid gap-4">
-                  {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                    <div key={key} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <p className="text-lg font-semibold text-slate-900">{label}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
-                        {key === "OPERATIONAL_EXPENSE"
-                          ? "Use this for diesel, operator allowances, oil, and other day-to-day running cost items."
-                          : key === "PREVENTIVE_MAINTENANCE"
-                            ? "Use this for planned maintenance work before failure occurs."
-                            : key === "ROUTINE_SERVICING"
-                              ? "Use this for normal servicing cycles, fluids, and scheduled workshop checks."
-                              : key === "BREAKDOWN_REPAIR"
-                                ? "Use this for reactive repair work after an equipment fault or stoppage."
-                                : "Use this for money earned from rentals, projects, or other approved income sources."}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            ) : null}
-
+          <div className="px-6 py-8 md:px-10">
             <div className="space-y-6">
               <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="flex flex-col gap-4">
@@ -381,7 +354,7 @@ export default function OperationsReport({
                       Report filters
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-                      Equipment ledger
+                      Report target ledger
                     </h2>
                   </div>
 
@@ -489,9 +462,13 @@ export default function OperationsReport({
                                   <td className="border-b border-slate-200 px-4 py-4 text-slate-700">
                                     {formatDateLabel(entry.entryDate)}
                                   </td>
-                                  <td className="border-b border-slate-200 px-4 py-4 text-slate-700">
-                                    <p className="font-medium text-slate-900">{entry.categoryLabel}</p>
-                                    <p className="mt-1 text-xs text-slate-500">{TYPE_LABELS[entry.type]}</p>
+                                <td className="border-b border-slate-200 px-4 py-4 text-slate-700">
+                                    <p className="font-medium text-slate-900">
+                                      {entry.operationalExpenseLabel || entry.categoryLabel}
+                                    </p>
+                                    <p className="mt-1 text-xs text-slate-500">
+                                      {entry.operationalExpenseLabel ? entry.categoryLabel : TYPE_LABELS[entry.type]}
+                                    </p>
                                   </td>
                                   <td className="border-b border-slate-200 px-4 py-4 font-semibold text-slate-900">
                                     {entry.title}
@@ -499,8 +476,17 @@ export default function OperationsReport({
                                   <td className="border-b border-slate-200 px-4 py-4 font-semibold text-slate-900">
                                     {formatCurrency(entry.amount)}
                                   </td>
-                                  <td className="border-b border-slate-200 px-4 py-4 text-slate-600">
-                                    {entry.description}
+                                <td className="border-b border-slate-200 px-4 py-4 text-slate-600">
+                                    <p>{entry.description}</p>
+                                    {entry.quantity && entry.unitPrice ? (
+                                      <p className="mt-1 text-xs text-slate-500">
+                                        {entry.quantity}{" "}
+                                        {entry.operationalExpenseType === "SAND_PURCHASE"
+                                          ? "trips"
+                                          : "kegs"}{" "}
+                                        x {formatCurrency(entry.unitPrice)}
+                                      </p>
+                                    ) : null}
                                   </td>
                                 </tr>
                               ))}
@@ -537,8 +523,12 @@ export default function OperationsReport({
                                   {formatDateLabel(entry.entryDate)}
                                 </td>
                                 <td className="border-b border-slate-200 px-4 py-4 text-slate-700">
-                                  <p className="font-medium text-slate-900">{entry.categoryLabel}</p>
-                                  <p className="mt-1 text-xs text-slate-500">{TYPE_LABELS[entry.type]}</p>
+                                  <p className="font-medium text-slate-900">
+                                    {entry.operationalExpenseLabel || entry.categoryLabel}
+                                  </p>
+                                  <p className="mt-1 text-xs text-slate-500">
+                                    {entry.operationalExpenseLabel ? entry.categoryLabel : TYPE_LABELS[entry.type]}
+                                  </p>
                                 </td>
                                 <td className="border-b border-slate-200 px-4 py-4 font-semibold text-slate-900">
                                   {entry.title}
@@ -547,7 +537,16 @@ export default function OperationsReport({
                                   {formatCurrency(entry.amount)}
                                 </td>
                                 <td className="border-b border-slate-200 px-4 py-4 text-slate-600">
-                                  {entry.description}
+                                  <p>{entry.description}</p>
+                                  {entry.quantity && entry.unitPrice ? (
+                                    <p className="mt-1 text-xs text-slate-500">
+                                      {entry.quantity}{" "}
+                                      {entry.operationalExpenseType === "SAND_PURCHASE"
+                                        ? "trips"
+                                        : "kegs"}{" "}
+                                      x {formatCurrency(entry.unitPrice)}
+                                    </p>
+                                  ) : null}
                                 </td>
                               </tr>
                             ))}
@@ -557,7 +556,7 @@ export default function OperationsReport({
                     </div>
                   ) : (
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-slate-500">
-                      No report entries match the current equipment and date filters.
+                      No report entries match the current target and date filters.
                     </div>
                   )}
                 </div>
@@ -566,7 +565,7 @@ export default function OperationsReport({
               <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
                 <div className="rounded-[2rem] border border-slate-200 bg-[#102033] p-6 text-white shadow-sm">
                   <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primaryYellow">
-                    Equipment snapshot
+                    Target snapshot
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold">
                     Current position
@@ -574,9 +573,9 @@ export default function OperationsReport({
 
                   <div className="mt-6 space-y-4">
                     <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                      <p className="text-lg font-semibold">{activeEquipment?.name || "No equipment"}</p>
+                      <p className="text-lg font-semibold">{activeEquipment?.name || "No report target"}</p>
                       <p className="mt-2 text-sm text-slate-300">
-                        {activeEquipment ? `${activeEquipment.company} ${activeEquipment.model}` : "No equipment selected."}
+                        {activeEquipment ? activeEquipment.description : "No report target selected."}
                       </p>
                     </div>
                     <div className="grid gap-3 text-sm text-slate-200">
@@ -619,6 +618,36 @@ export default function OperationsReport({
                   </div>
                 </div>
               </div>
+
+              {!pdfMode ? (
+                <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+                  <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#9c3d2b]">
+                    Reporting notes
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+                    What is captured
+                  </h2>
+
+                  <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                      <div key={key} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <p className="text-lg font-semibold text-slate-900">{label}</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          {key === "OPERATIONAL_EXPENSE"
+                            ? "Use this for diesel, operator allowances, oil, and other day-to-day running cost items."
+                            : key === "PREVENTIVE_MAINTENANCE"
+                              ? "Use this for planned maintenance work before failure occurs."
+                              : key === "ROUTINE_SERVICING"
+                                ? "Use this for normal servicing cycles, fluids, and scheduled workshop checks."
+                                : key === "BREAKDOWN_REPAIR"
+                                  ? "Use this for reactive repair work after an equipment fault or stoppage."
+                                  : "Use this for money earned from rentals, projects, or other approved income sources."}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

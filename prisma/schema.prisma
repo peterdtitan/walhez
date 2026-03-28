@@ -30,6 +30,24 @@ enum ReportCategory {
   OTHER_INCOME
 }
 
+enum OperationalExpenseType {
+  CREW_SALARY
+  CREW_ALLOWANCE
+  DIESEL_PURCHASE
+  FUEL_PURCHASE
+  SAND_PURCHASE
+  REPAIRS
+  MOBILIZATION
+  DEMOBILIZATION
+  ROAD_SETTLEMENT
+}
+
+enum ReportTarget {
+  VESPA_SITE
+  SALARY_ENTRIES
+  OTHER_OPERATIONAL_ENTRIES
+}
+
 model AdminUser {
   id           String         @id @default(cuid())
   username     String         @unique
@@ -80,18 +98,23 @@ model EquipmentCharacteristic {
 }
 
 model ReportEntry {
-  id          String         @id @default(cuid())
-  equipmentId String
-  type        ReportType
-  category    ReportCategory
-  title       String
-  description String
-  amount      Int
-  entryDate   DateTime
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  equipment   Equipment      @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  id                     String                  @id @default(cuid())
+  equipmentId            String?
+  reportTarget           ReportTarget?
+  type                   ReportType
+  category               ReportCategory
+  operationalExpenseType OperationalExpenseType?
+  title                  String
+  description            String
+  quantity               Int?
+  unitPrice              Int?
+  amount                 Int
+  entryDate              DateTime
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  equipment              Equipment?              @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
 
   @@index([equipmentId, type, entryDate])
+  @@index([reportTarget, type, entryDate])
   @@index([type, category])
 }

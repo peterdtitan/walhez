@@ -10,7 +10,12 @@ import {
   requireAdmin,
   verifyPassword,
 } from "@/lib/auth";
-import { getCategoriesForType } from "@/lib/report-options";
+import {
+  getCategoriesForType,
+  OPERATIONAL_EXPENSE_LABELS,
+  REPORT_TARGET_OPTIONS,
+  SALARY_OPERATIONAL_EXPENSE_VALUES,
+} from "@/lib/report-options";
 import { prisma } from "@/lib/prisma";
 
 function slugify(value) {
@@ -145,6 +150,7 @@ export async function createEquipmentAction(_previousState, formData) {
 
   revalidatePath("/admin");
   revalidatePath("/equipment");
+  revalidatePath("/admin/reports/pdf/comprehensive");
 
   return {
     success: true,
@@ -156,19 +162,119 @@ export async function createReportEntryAction(_previousState, formData) {
   await requireAdmin();
 
   const equipmentId = String(formData.get("equipmentId") || "").trim();
+  const reportTarget = String(formData.get("reportTarget") || "").trim();
   const type = String(formData.get("type") || "EXPENSE").trim();
   const category = String(formData.get("category") || "").trim();
-  const title = String(formData.get("title") || "").trim();
+  const titleInput = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
-  const amount = Number(formData.get("amount") || 0);
+  const amountInput = Number(formData.get("amount") || 0);
   const entryDateInput = String(formData.get("entryDate") || "").trim();
+  const operationalExpenseType = String(formData.get("operationalExpenseType") || "").trim();
+  const quantityInput = Number(formData.get("quantity") || 0);
+  const unitPriceInput = Number(formData.get("unitPrice") || 0);
+  const isOperationalExpense = type === "EXPENSE" && category === "OPERATIONAL_EXPENSE";
+  const isMeasuredPurchase =
+    operationalExpenseType === "DIESEL_PURCHASE" ||
+    operationalExpenseType === "FUEL_PURCHASE" ||
+    operationalExpenseType === "SAND_PURCHASE";
+  const title = titleInput || OPERATIONAL_EXPENSE_LABELS[operationalExpenseType] || "";
+  const allowedReportTargets = new Set(REPORT_TARGET_OPTIONS.map((item) => item.value));
+  const salaryReportTargets = new Set(
+    REPORT_TARGET_OPTIONS.filter((item) => item.targetType === "SALARY").map(
+      (item) => item.value
+    )
+  );
+  const otherOperationalReportTargets = new Set(
+    REPORT_TARGET_OPTIONS.filter((item) => item.targetType === "OTHER_OPERATIONAL").map(
+      (item) => item.value
+    )
+  );
+  const salaryOperationalExpenseTypes = new Set(SALARY_OPERATIONAL_EXPENSE_VALUES);
+  const hasEquipmentTarget = Boolean(equipmentId);
+  const hasNamedTarget = Boolean(reportTarget);
 
-  if (!equipmentId || !type || !category || !title || !description || !entryDateInput) {
+  if (!type || !category || !title || !description || !entryDateInput) {
     return {
       success: false,
       message: "Complete all report fields before saving.",
     };
   }
+
+  if ((!hasEquipmentTarget && !hasNamedTarget) || (hasEquipmentTarget && hasNamedTarget)) {
+    return {
+      success: false,
+      message: "Select either an equipment item or a report target.",
+    };
+  }
+
+  if (hasNamedTarget && !allowedReportTargets.has(reportTarget)) {
+    return {
+      success: false,
+      message: "Select a valid report target.",
+    };
+  }
+
+  if (
+    hasNamedTarget &&
+    (salaryReportTargets.has(reportTarget) || otherOperationalReportTargets.has(reportTarget)) &&
+    (type !== "EXPENSE" || category !== "OPERATIONAL_EXPENSE")
+  ) {
+    return {
+      success: false,
+      message: "Salary and other operational sections can only be saved as operational expenses.",
+    };
+  }
+
+  if (isOperationalExpense && !operationalExpenseType) {
+    return {
+      success: false,
+      message: "Select an operational expense item.",
+    };
+  }
+
+  if (isMeasuredPurchase && (!Number.isFinite(quantityInput) || quantityInput <= 0)) {
+    return {
+      success: false,
+      message:
+        operationalExpenseType === "SAND_PURCHASE"
+          ? "Enter the number of trips for the sand purchase."
+          : "Enter the number of kegs for the fuel purchase.",
+    };
+  }
+
+  if (isMeasuredPurchase && (!Number.isFinite(unitPriceInput) || unitPriceInput <= 0)) {
+    return {
+      success: false,
+      message:
+        operationalExpenseType === "SAND_PURCHASE"
+          ? "Enter a valid unit price for each trip."
+          : "Enter a valid unit price for each keg.",
+    };
+  }
+
+  if (
+    salaryReportTargets.has(reportTarget) &&
+    !salaryOperationalExpenseTypes.has(operationalExpenseType)
+  ) {
+    return {
+      success: false,
+      message: "Salary entries must use Crew salary or Crew allowance.",
+    };
+  }
+
+  if (
+    otherOperationalReportTargets.has(reportTarget) &&
+    salaryOperationalExpenseTypes.has(operationalExpenseType)
+  ) {
+    return {
+      success: false,
+      message: "Use the salary section for Crew salary and Crew allowance entries.",
+    };
+  }
+
+  const amount = isMeasuredPurchase
+    ? Math.round(quantityInput * unitPriceInput)
+    : Math.round(amountInput);
 
   if (!Number.isFinite(amount) || amount <= 0) {
     return {
@@ -177,15 +283,17 @@ export async function createReportEntryAction(_previousState, formData) {
     };
   }
 
-  const equipment = await prisma.equipment.findUnique({
-    where: { id: equipmentId },
-  });
+  if (hasEquipmentTarget) {
+    const equipment = await prisma.equipment.findUnique({
+      where: { id: equipmentId },
+    });
 
-  if (!equipment) {
-    return {
-      success: false,
-      message: "Select a valid equipment.",
-    };
+    if (!equipment) {
+      return {
+        success: false,
+        message: "Select a valid equipment.",
+      };
+    }
   }
 
   const allowedCategories = getCategoriesForType(type).map((item) => item.value);
@@ -197,21 +305,40 @@ export async function createReportEntryAction(_previousState, formData) {
     };
   }
 
+  const createData = {
+    type,
+    category,
+    title,
+    description,
+    amount,
+    entryDate: new Date(entryDateInput),
+  };
+
+  if (hasEquipmentTarget) {
+    createData.equipmentId = equipmentId;
+  }
+
+  if (hasNamedTarget) {
+    createData.reportTarget = reportTarget;
+  }
+
+  if (isOperationalExpense) {
+    createData.operationalExpenseType = operationalExpenseType;
+  }
+
+  if (isMeasuredPurchase) {
+    createData.quantity = Math.round(quantityInput);
+    createData.unitPrice = Math.round(unitPriceInput);
+  }
+
   await prisma.reportEntry.create({
-    data: {
-      equipmentId,
-      type,
-      category,
-      title,
-      description,
-      amount: Math.round(amount),
-      entryDate: new Date(entryDateInput),
-    },
+    data: createData,
   });
 
   revalidatePath("/admin");
   revalidatePath("/admin/reports");
   revalidatePath("/admin/reports/pdf");
+  revalidatePath("/admin/reports/pdf/comprehensive");
   revalidatePath("/operations-report");
 
   return {

@@ -3,17 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  HiOutlineArrowRightOnRectangle,
+  HiOutlineDocumentChartBar,
+  HiOutlineSquares2X2,
+} from "react-icons/hi2";
 import { logoutAdminAction } from "@/app/admin/actions";
 
 const navigation = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/reports", label: "Reports" },
+  { href: "/admin", label: "Dashboard", icon: HiOutlineSquares2X2 },
+  { href: "/admin/reports", label: "Reports", icon: HiOutlineDocumentChartBar },
 ];
 
 function NavLinks({ pathname, onNavigate }) {
   return (
     <nav className="space-y-2">
       {navigation.map((item) => {
+        const Icon = item.icon;
         const active =
           pathname === item.href ||
           (item.href !== "/admin" && pathname.startsWith(item.href));
@@ -23,12 +29,13 @@ function NavLinks({ pathname, onNavigate }) {
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            className={`block rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+            className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
               active
                 ? "bg-[#f2c94c] text-[#102033]"
                 : "text-slate-300 hover:bg-white/10 hover:text-white"
             }`}
           >
+            <Icon className="text-lg" />
             {item.label}
           </Link>
         );
@@ -66,8 +73,9 @@ export default function AdminShell({ admin, children }) {
             <form action={logoutAdminAction}>
               <button
                 type="submit"
-                className="w-full rounded-2xl border border-white/15 px-4 py-3 text-left text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
+                className="flex w-full items-center gap-3 rounded-2xl border border-white/15 px-4 py-3 text-left text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
               >
+                <HiOutlineArrowRightOnRectangle className="text-lg" />
                 Log out
               </button>
             </form>
@@ -75,15 +83,11 @@ export default function AdminShell({ admin, children }) {
         ) : null}
       </header>
 
-      <div className="mx-auto flex min-h-screen max-w-[1600px]">
-        <aside className="hidden w-72 shrink-0 border-r border-white/10 bg-[#102033] px-6 py-8 text-white print:hidden lg:flex lg:flex-col">
+      <div className="mx-auto min-h-screen max-w-[1600px] lg:pl-72">
+        <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-white/10 bg-[#102033] px-6 py-8 text-white print:hidden lg:flex lg:flex-col">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#f2c94c]">
               Walhez admin
-            </p>
-            <h1 className="mt-4 text-3xl font-semibold">Control room</h1>
-            <p className="mt-3 text-sm leading-6 text-slate-300">
-              Manage equipment records and view filtered income and expense reports.
             </p>
           </div>
 
@@ -99,15 +103,16 @@ export default function AdminShell({ admin, children }) {
             <form action={logoutAdminAction}>
               <button
                 type="submit"
-                className="w-full rounded-2xl border border-white/15 px-4 py-3 text-left text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
+                className="flex w-full items-center gap-3 rounded-2xl border border-white/15 px-4 py-3 text-left text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
               >
+                <HiOutlineArrowRightOnRectangle className="text-lg" />
                 Log out
               </button>
             </form>
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0">{children}</main>
       </div>
     </div>
   );
