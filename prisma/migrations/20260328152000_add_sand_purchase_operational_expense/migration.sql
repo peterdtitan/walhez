@@ -1,0 +1,1 @@
+ALTER TYPE "OperationalExpenseType" ADD VALUE 'SAND_PURCHASE';

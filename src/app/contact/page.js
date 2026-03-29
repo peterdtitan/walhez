@@ -1,5 +1,10 @@
 import React from 'react';
 
+export const metadata = {
+  title: "Contact",
+  description: "Contact Walhez Group for equipment reservations, project support, and operational enquiries.",
+};
+
 export default function ContactPage() {
   const formspreeId = process.env.NEXT_PUBLIC_FORMSPREE_ID;
 
