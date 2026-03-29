@@ -102,6 +102,10 @@ export default function ComprehensiveReportPdf({ report }) {
             table-layout: auto;
           }
 
+          .comprehensive-report-ledger-table {
+            table-layout: fixed !important;
+          }
+
           .comprehensive-report-table th,
           .comprehensive-report-table td {
             vertical-align: top;
@@ -116,6 +120,75 @@ export default function ComprehensiveReportPdf({ report }) {
             min-width: 220px;
             word-break: break-word;
             overflow-wrap: anywhere;
+          }
+
+          .comprehensive-report-ledger-date-col {
+            width: 72px;
+          }
+
+          .comprehensive-report-ledger-type-col {
+            width: 96px;
+          }
+
+          .comprehensive-report-ledger-amount-col {
+            width: 128px;
+          }
+
+          .comprehensive-report-ledger-description-col {
+            width: 18%;
+          }
+
+          .comprehensive-report-ledger-table .comprehensive-report-description {
+            min-width: 0 !important;
+            font-size: 10px !important;
+            line-height: 1.35 !important;
+            white-space: normal !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+          }
+
+          .comprehensive-report-ledger-table .comprehensive-report-target,
+          .comprehensive-report-ledger-table .comprehensive-report-category,
+          .comprehensive-report-ledger-table .comprehensive-report-title {
+            min-width: 0 !important;
+            white-space: normal !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+          }
+
+          .comprehensive-report-ledger-table .comprehensive-report-target {
+            font-size: 10px !important;
+            line-height: 1.35 !important;
+          }
+
+          .comprehensive-report-ledger-table .comprehensive-report-category {
+            font-size: 10px !important;
+            line-height: 1.35 !important;
+          }
+
+          .comprehensive-report-ledger-table .comprehensive-report-title {
+            font-size: 10px !important;
+            line-height: 1.35 !important;
+          }
+
+          .comprehensive-report-ledger-table .comprehensive-report-type-badge {
+            display: inline-flex !important;
+            max-width: 100% !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 3px 6px !important;
+            font-size: 9px !important;
+            line-height: 1.2 !important;
+            letter-spacing: 0.06em !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+          }
+
+          .comprehensive-report-ledger-table .comprehensive-report-amount {
+            min-width: 128px !important;
+            max-width: 128px !important;
+            overflow: hidden !important;
+            text-align: right !important;
           }
 
           .comprehensive-report-summary-grid {
@@ -365,7 +438,15 @@ export default function ComprehensiveReportPdf({ report }) {
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="comprehensive-report-table min-w-full text-left text-xs md:text-sm">
+                    <table className="comprehensive-report-table comprehensive-report-ledger-table min-w-full text-left text-xs md:text-sm">
+                      <colgroup>
+                        <col className="comprehensive-report-ledger-date-col" />
+                        <col className="comprehensive-report-ledger-type-col" />
+                        <col />
+                        <col />
+                        <col className="comprehensive-report-ledger-description-col" />
+                        <col className="comprehensive-report-ledger-amount-col" />
+                      </colgroup>
                       <thead className="bg-slate-100 text-xs uppercase tracking-[0.22em] text-slate-500">
                         <tr>
                           <th className="px-4 py-3">Date</th>
@@ -387,7 +468,7 @@ export default function ComprehensiveReportPdf({ report }) {
                             </td>
                             <td className="border-b border-slate-200 px-4 py-4">
                               <span
-                                className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
+                                className={`comprehensive-report-type-badge rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
                                   entry.type === "EXPENSE"
                                     ? "bg-red-100 text-red-700"
                                     : "bg-green-100 text-green-700"
@@ -396,7 +477,7 @@ export default function ComprehensiveReportPdf({ report }) {
                                 {entry.type}
                               </span>
                             </td>
-                            <td className="border-b border-slate-200 px-4 py-4 text-slate-700">
+                            <td className="comprehensive-report-category border-b border-slate-200 px-4 py-4 text-slate-700">
                               <p className="font-medium text-slate-900">
                                 {entry.operationalExpenseLabel || entry.categoryLabel}
                               </p>
@@ -404,7 +485,7 @@ export default function ComprehensiveReportPdf({ report }) {
                                 {entry.operationalExpenseLabel ? entry.categoryLabel : entry.type}
                               </p>
                             </td>
-                            <td className="border-b border-slate-200 px-4 py-4 font-semibold text-slate-900">
+                            <td className="comprehensive-report-title border-b border-slate-200 px-4 py-4 font-semibold text-slate-900">
                               {entry.title}
                             </td>
                             <td className="comprehensive-report-description border-b border-slate-200 px-4 py-4 text-slate-600">
@@ -427,58 +508,21 @@ export default function ComprehensiveReportPdf({ report }) {
 
         <div className="mt-6" style={{ breakBefore: "page" }}>
           <TableCard
-            title="Equipment register"
-            note="Tracked equipment records, including descriptions and characteristic rows."
-          >
-            <div className="space-y-4">
-              {report.equipmentRecords.map((item) => (
-                <div key={item.id} className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                    <div>
-                      <h3 className="text-xl font-semibold text-slate-900">{item.name}</h3>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {item.company} {item.model}
-                      </p>
-                      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-                        {item.description}
-                      </p>
-                    </div>
-                    <p className="text-sm text-slate-500">
-                      Added {formatDate(item.createdAt)}
-                    </p>
-                  </div>
-
-                  {item.characteristics.length ? (
-                    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                      {item.characteristics.map((characteristic) => (
-                        <div
-                          key={characteristic.id}
-                          className="rounded-2xl border border-slate-200 bg-white px-4 py-3"
-                        >
-                          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                            {characteristic.title}
-                          </p>
-                          <p className="mt-2 text-sm font-medium text-slate-900">
-                            {characteristic.value}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </TableCard>
-        </div>
-
-        <div className="mt-6" style={{ breakBefore: "page" }}>
-          <TableCard
             className="comprehensive-report-flow-card"
             title="Full ledger"
             note="Every expense and income entry captured in the reporting system."
           >
             <div className="overflow-x-auto">
-              <table className="comprehensive-report-table min-w-full text-left text-xs md:text-sm">
+              <table className="comprehensive-report-table comprehensive-report-ledger-table min-w-full text-left text-xs md:text-sm">
+                <colgroup>
+                  <col className="comprehensive-report-ledger-date-col" />
+                  <col />
+                  <col className="comprehensive-report-ledger-type-col" />
+                  <col />
+                  <col />
+                  <col className="comprehensive-report-ledger-description-col" />
+                  <col className="comprehensive-report-ledger-amount-col" />
+                </colgroup>
                 <thead className="bg-slate-100 text-xs uppercase tracking-[0.22em] text-slate-500">
                   <tr>
                     <th className="px-4 py-3">Date</th>
@@ -496,13 +540,13 @@ export default function ComprehensiveReportPdf({ report }) {
                       <td className="border-b border-slate-200 px-4 py-4 text-slate-700">
                         {formatDate(entry.entryDate)}
                       </td>
-                      <td className="border-b border-slate-200 px-4 py-4">
+                      <td className="comprehensive-report-target border-b border-slate-200 px-4 py-4">
                         <p className="font-medium text-slate-900">{entry.targetName}</p>
                         <p className="mt-1 text-xs text-slate-500">{entry.targetDescription}</p>
                       </td>
                       <td className="border-b border-slate-200 px-4 py-4">
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
+                          className={`comprehensive-report-type-badge rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
                             entry.type === "EXPENSE"
                               ? "bg-red-100 text-red-700"
                               : "bg-green-100 text-green-700"
@@ -511,7 +555,7 @@ export default function ComprehensiveReportPdf({ report }) {
                           {entry.type}
                         </span>
                       </td>
-                      <td className="border-b border-slate-200 px-4 py-4 text-slate-700">
+                      <td className="comprehensive-report-category border-b border-slate-200 px-4 py-4 text-slate-700">
                         <p className="font-medium text-slate-900">
                           {entry.operationalExpenseLabel || entry.categoryLabel}
                         </p>
@@ -519,7 +563,7 @@ export default function ComprehensiveReportPdf({ report }) {
                           {entry.operationalExpenseLabel ? entry.categoryLabel : entry.type}
                         </p>
                       </td>
-                      <td className="border-b border-slate-200 px-4 py-4 font-semibold text-slate-900">
+                      <td className="comprehensive-report-title border-b border-slate-200 px-4 py-4 font-semibold text-slate-900">
                         {entry.title}
                       </td>
                       <td className="comprehensive-report-description border-b border-slate-200 px-4 py-4 text-slate-600">

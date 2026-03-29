@@ -22,7 +22,7 @@ function SubmitButton() {
   );
 }
 
-export default function AdminLoginForm() {
+export default function AdminLoginForm({ notice = "" }) {
   const [state, formAction] = useFormState(loginAdminAction, initialActionState);
 
   return (
@@ -35,17 +35,26 @@ export default function AdminLoginForm() {
           Walhez control room
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          Sign in to add equipment, upload equipment images, and log expenses or income against each machine.
+          Sign in with your admin email or legacy username to add equipment, upload
+          equipment images, and log expenses or income against each machine.
         </p>
+
+        {notice ? (
+          <p className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {notice}
+          </p>
+        ) : null}
 
         <form action={formAction} className="mt-8 space-y-5">
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Username</span>
+            <span className="mb-2 block text-sm font-medium text-slate-700">
+              Email or username
+            </span>
             <input
               type="text"
-              name="username"
+              name="identifier"
               className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-[#1E2D44]"
-              placeholder="admin"
+              placeholder="admin@walhez.com or admin"
               autoComplete="username"
             />
           </label>

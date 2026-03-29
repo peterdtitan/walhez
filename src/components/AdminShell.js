@@ -7,12 +7,15 @@ import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineDocumentChartBar,
   HiOutlineSquares2X2,
+  HiOutlineUsers,
 } from "react-icons/hi2";
 import { logoutAdminAction } from "@/app/admin/actions";
+import { getAdminDisplayName, getAdminFullName } from "@/lib/admin-users";
 
 const navigation = [
   { href: "/admin", label: "Dashboard", icon: HiOutlineSquares2X2 },
   { href: "/admin/reports", label: "Reports", icon: HiOutlineDocumentChartBar },
+  { href: "/admin/access", label: "Admins", icon: HiOutlineUsers },
 ];
 
 function NavLinks({ pathname, onNavigate }) {
@@ -47,6 +50,8 @@ function NavLinks({ pathname, onNavigate }) {
 export default function AdminShell({ admin, children }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const displayName = getAdminDisplayName(admin);
+  const fullName = getAdminFullName(admin);
 
   return (
     <div className="min-h-screen bg-[#f3efe5] text-slate-900">
@@ -56,7 +61,7 @@ export default function AdminShell({ admin, children }) {
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#f2c94c]">
               Walhez admin
             </p>
-            <p className="mt-1 text-sm text-slate-300">{admin.username}</p>
+            <p className="mt-1 text-sm text-slate-300">{displayName}</p>
           </div>
           <button
             type="button"
@@ -97,8 +102,10 @@ export default function AdminShell({ admin, children }) {
 
           <div className="mt-auto space-y-4">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-sm font-semibold">{admin.username}</p>
-              <p className="mt-1 text-sm text-slate-300">Authenticated administrator</p>
+              <p className="text-sm font-semibold">{fullName}</p>
+              <p className="mt-1 text-sm text-slate-300">
+                {admin.email || `@${admin.username}`}
+              </p>
             </div>
             <form action={logoutAdminAction}>
               <button

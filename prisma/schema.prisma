@@ -49,12 +49,19 @@ enum ReportTarget {
 }
 
 model AdminUser {
-  id           String         @id @default(cuid())
-  username     String         @unique
-  passwordHash String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  sessions     AdminSession[]
+  id             String         @id @default(cuid())
+  username       String         @unique
+  email          String?        @unique
+  firstName      String?
+  lastName       String?
+  passwordHash   String?
+  inviteToken    String?        @unique
+  inviteExpiresAt DateTime?
+  invitedAt      DateTime?
+  activatedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  sessions       AdminSession[]
 }
 
 model AdminSession {

@@ -33,6 +33,7 @@ import {
   SPECIAL_REPORT_TARGET_DEFAULTS,
   getReportTargetsForType,
 } from "@/lib/report-options";
+import { getAdminDisplayName } from "@/lib/admin-users";
 import { formatCurrency } from "@/lib/formatting";
 
 const initialActionState = {
@@ -630,9 +631,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function AdminPanel({ admin, equipment, recentEntries, dashboardMetrics }) {
-  const displayName = admin.username
-    ? `${admin.username.charAt(0).toUpperCase()}${admin.username.slice(1)}`
-    : "";
+  const displayName = getAdminDisplayName(admin);
   const [equipmentState, equipmentAction] = useFormState(
     createEquipmentAction,
     initialActionState
@@ -685,6 +684,12 @@ export default function AdminPanel({ admin, equipment, recentEntries, dashboardM
                 className="rounded-full border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:border-primaryYellow hover:text-primaryYellow"
               >
                 View reports
+              </Link>
+              <Link
+                href="/admin/access"
+                className="rounded-full border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:border-primaryYellow hover:text-primaryYellow"
+              >
+                Manage admins
               </Link>
             </div>
           </div>

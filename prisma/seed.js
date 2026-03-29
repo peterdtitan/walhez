@@ -15,6 +15,36 @@ function hashPassword(password, salt = randomBytes(16).toString("hex")) {
   return `${salt}:${scryptSync(password, salt, 64).toString("hex")}`;
 }
 
+function capitalizeFirst(value) {
+  if (!value) {
+    return "Admin";
+  }
+
+  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+}
+
+async function getAdminSchema() {
+  const columns = await prisma.$queryRaw`
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = current_schema()
+      AND table_name = 'AdminUser'
+  `;
+
+  const columnSet = new Set(columns.map((item) => item.column_name));
+
+  return {
+    hasEmail: columnSet.has("email"),
+    hasProfiles:
+      columnSet.has("firstName") &&
+      columnSet.has("lastName") &&
+      columnSet.has("activatedAt"),
+    hasInviteFlow:
+      columnSet.has("inviteToken") &&
+      columnSet.has("inviteExpiresAt"),
+  };
+}
+
 const equipmentSeed = [
   {
     name: "Dredger",
@@ -89,17 +119,44 @@ const equipmentSeed = [
 ];
 
 async function main() {
+  const adminSchema = await getAdminSchema();
   const username = process.env.ADMIN_USERNAME || "admin";
+  const email = process.env.ADMIN_EMAIL || null;
   const password = process.env.ADMIN_PASSWORD || "walhez123";
+  const firstName = process.env.ADMIN_FIRST_NAME || capitalizeFirst(username);
+  const lastName = process.env.ADMIN_LAST_NAME || null;
+  const activatedAt = new Date();
 
   await prisma.adminUser.upsert({
     where: { username },
     update: {
       passwordHash: hashPassword(password),
+      ...(adminSchema.hasEmail ? { email } : {}),
+      ...(adminSchema.hasProfiles
+        ? {
+            firstName,
+            lastName,
+            activatedAt,
+          }
+        : {}),
+      ...(adminSchema.hasInviteFlow
+        ? {
+            inviteToken: null,
+            inviteExpiresAt: null,
+          }
+        : {}),
     },
     create: {
       username,
       passwordHash: hashPassword(password),
+      ...(adminSchema.hasEmail ? { email } : {}),
+      ...(adminSchema.hasProfiles
+        ? {
+            firstName,
+            lastName,
+            activatedAt,
+          }
+        : {}),
     },
   });
 

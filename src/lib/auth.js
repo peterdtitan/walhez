@@ -3,10 +3,45 @@ import "server-only";
 import crypto from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getAdminAuthSchema } from "./admin-auth-schema";
 import { prisma } from "./prisma";
 
 const ADMIN_SESSION_COOKIE = "walhez_admin_session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
+const LEGACY_AUTHENTICATED_ADMIN_SELECT = {
+  id: true,
+  username: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
+function getAuthenticatedAdminSelect(schema) {
+  return {
+    ...LEGACY_AUTHENTICATED_ADMIN_SELECT,
+    ...(schema.hasEmail ? { email: true } : {}),
+    ...(schema.hasProfiles
+      ? {
+          firstName: true,
+          lastName: true,
+          activatedAt: true,
+        }
+      : {}),
+  };
+}
+
+function normalizeAuthenticatedAdmin(admin, schema) {
+  if (!admin) {
+    return null;
+  }
+
+  return {
+    ...admin,
+    email: schema.hasEmail ? admin.email || null : null,
+    firstName: schema.hasProfiles ? admin.firstName || null : null,
+    lastName: schema.hasProfiles ? admin.lastName || null : null,
+    activatedAt: schema.hasProfiles ? admin.activatedAt || null : null,
+  };
+}
 
 export function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
   const derivedKey = crypto
@@ -17,6 +52,10 @@ export function hashPassword(password, salt = crypto.randomBytes(16).toString("h
 }
 
 export function verifyPassword(password, storedHash) {
+  if (!storedHash) {
+    return false;
+  }
+
   const [salt, currentHash] = storedHash.split(":");
 
   if (!salt || !currentHash) {
@@ -73,9 +112,15 @@ export async function getAuthenticatedAdmin() {
     return null;
   }
 
+  const schema = await getAdminAuthSchema();
+
   const session = await prisma.adminSession.findUnique({
     where: { token },
-    include: { user: true },
+    include: {
+      user: {
+        select: getAuthenticatedAdminSelect(schema),
+      },
+    },
   });
 
   if (!session || session.expiresAt < new Date()) {
@@ -87,7 +132,49 @@ export async function getAuthenticatedAdmin() {
     return null;
   }
 
-  return session.user;
+  return normalizeAuthenticatedAdmin(session.user, schema);
+}
+
+export async function getInvitedAdminForSetup(inviteToken) {
+  if (!inviteToken) {
+    return null;
+  }
+
+  const schema = await getAdminAuthSchema();
+
+  if (!schema.hasInviteFlow || !schema.hasEmail || !schema.hasProfiles) {
+    return null;
+  }
+
+  const admin = await prisma.adminUser.findUnique({
+    where: { inviteToken },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      passwordHash: true,
+      inviteExpiresAt: true,
+    },
+  });
+
+  if (!admin || admin.passwordHash) {
+    return null;
+  }
+
+  if (admin.inviteExpiresAt && admin.inviteExpiresAt < new Date()) {
+    return null;
+  }
+
+  return {
+    id: admin.id,
+    username: admin.username,
+    email: admin.email,
+    firstName: admin.firstName,
+    lastName: admin.lastName,
+    inviteExpiresAt: admin.inviteExpiresAt,
+  };
 }
 
 export async function requireAdmin() {

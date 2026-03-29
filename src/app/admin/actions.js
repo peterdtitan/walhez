@@ -1,5 +1,6 @@
 "use server";
 
+import crypto from "crypto";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
@@ -7,9 +8,17 @@ import { redirect } from "next/navigation";
 import {
   clearAdminSession,
   createAdminSession,
+  hashPassword,
   requireAdmin,
   verifyPassword,
 } from "@/lib/auth";
+import { getAdminAuthSchema } from "@/lib/admin-auth-schema";
+import { sendAdminInviteEmail } from "@/lib/admin-invite-email";
+import {
+  buildAdminInvitePath,
+  normalizeAdminEmail,
+  normalizeAdminUsername,
+} from "@/lib/admin-users";
 import {
   getCategoriesForType,
   OPERATIONAL_EXPENSE_LABELS,
@@ -17,6 +26,8 @@ import {
   SALARY_OPERATIONAL_EXPENSE_VALUES,
 } from "@/lib/report-options";
 import { prisma } from "@/lib/prisma";
+
+const ADMIN_INVITE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 
 function slugify(value) {
   return value
@@ -37,20 +48,74 @@ function sanitizeFileName(filename) {
   return `${baseName || "equipment"}-${Date.now()}${extension}`;
 }
 
+function getAdminLookupSelect(schema) {
+  return {
+    id: true,
+    username: true,
+    passwordHash: true,
+    ...(schema.hasEmail ? { email: true } : {}),
+  };
+}
+
+async function findAdminByIdentifier(identifier) {
+  const schema = await getAdminAuthSchema();
+  const email = normalizeAdminEmail(identifier);
+  const username = normalizeAdminUsername(identifier);
+
+  if (!email && !username) {
+    return null;
+  }
+
+  return prisma.adminUser.findFirst({
+    select: getAdminLookupSelect(schema),
+    where: schema.hasEmail
+      ? {
+          OR: [
+            {
+              email: {
+                equals: email,
+                mode: "insensitive",
+              },
+            },
+            {
+              username: {
+                equals: username,
+                mode: "insensitive",
+              },
+            },
+          ],
+        }
+      : {
+          username: {
+            equals: username,
+            mode: "insensitive",
+          },
+        },
+  });
+}
+
 export async function loginAdminAction(_previousState, formData) {
-  const username = String(formData.get("username") || "").trim();
+  const identifier = String(
+    formData.get("identifier") || formData.get("username") || formData.get("email") || ""
+  ).trim();
   const password = String(formData.get("password") || "");
 
-  if (!username || !password) {
+  if (!identifier || !password) {
     return {
       success: false,
-      message: "Enter your username and password.",
+      message: "Enter your email or username and password.",
     };
   }
 
-  const admin = await prisma.adminUser.findUnique({
-    where: { username },
-  });
+  const admin = await findAdminByIdentifier(identifier);
+
+  if (admin && !admin.passwordHash) {
+    return {
+      success: false,
+      message:
+        "This admin account has not completed setup yet. Open the invite link to create a password.",
+    };
+  }
 
   if (!admin || !verifyPassword(password, admin.passwordHash)) {
     return {
@@ -60,6 +125,182 @@ export async function loginAdminAction(_previousState, formData) {
   }
 
   await createAdminSession(admin.id);
+  redirect("/admin");
+}
+
+export async function inviteAdminAction(_previousState, formData) {
+  await requireAdmin();
+  const schema = await getAdminAuthSchema();
+  const email = normalizeAdminEmail(formData.get("email"));
+
+  if (!schema.hasEmail || !schema.hasProfiles || !schema.hasInviteFlow) {
+    return {
+      success: false,
+      message:
+        "Email invites are not available until the latest admin auth migration is applied.",
+      invitePath: "",
+    };
+  }
+
+  if (!email) {
+    return {
+      success: false,
+      message: "Enter an email address for the new admin.",
+      invitePath: "",
+    };
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return {
+      success: false,
+      message: "Enter a valid email address.",
+      invitePath: "",
+    };
+  }
+
+  const existingAdmin = await findAdminByIdentifier(email);
+
+  if (existingAdmin?.passwordHash) {
+    return {
+      success: false,
+      message: "An active admin already uses this email.",
+      invitePath: "",
+    };
+  }
+
+  const inviteToken = crypto.randomBytes(32).toString("hex");
+  const inviteExpiresAt = new Date(Date.now() + ADMIN_INVITE_DURATION_MS);
+  const username = email;
+
+  if (existingAdmin) {
+    await prisma.adminUser.update({
+      where: { id: existingAdmin.id },
+      data: {
+        username,
+        email,
+        inviteToken,
+        inviteExpiresAt,
+        invitedAt: new Date(),
+      },
+    });
+  } else {
+    await prisma.adminUser.create({
+      data: {
+        username,
+        email,
+        inviteToken,
+        inviteExpiresAt,
+        invitedAt: new Date(),
+      },
+    });
+  }
+
+  revalidatePath("/admin/access");
+  revalidatePath("/admin/login");
+
+  const invitePath = buildAdminInvitePath(inviteToken);
+  const emailDelivery = await sendAdminInviteEmail({
+    email,
+    invitePath,
+  });
+
+  if (!emailDelivery.success) {
+    return {
+      success: false,
+      message: emailDelivery.message,
+      invitePath,
+    };
+  }
+
+  return {
+    success: true,
+    message: `Invite emailed to ${email}.`,
+    invitePath,
+  };
+}
+
+export async function completeAdminInviteAction(_previousState, formData) {
+  const schema = await getAdminAuthSchema();
+  const inviteToken = String(formData.get("inviteToken") || "").trim();
+  const firstName = String(formData.get("firstName") || "").trim();
+  const lastName = String(formData.get("lastName") || "").trim();
+  const password = String(formData.get("password") || "");
+  const confirmPassword = String(formData.get("confirmPassword") || "");
+
+  if (!schema.hasEmail || !schema.hasProfiles || !schema.hasInviteFlow) {
+    return {
+      success: false,
+      message:
+        "Invite setup is not available until the latest admin auth migration is applied.",
+    };
+  }
+
+  if (!inviteToken || !firstName || !lastName || !password || !confirmPassword) {
+    return {
+      success: false,
+      message: "Complete your first name, last name, and password fields.",
+    };
+  }
+
+  if (password.length < 8) {
+    return {
+      success: false,
+      message: "Choose a password with at least 8 characters.",
+    };
+  }
+
+  if (password !== confirmPassword) {
+    return {
+      success: false,
+      message: "The password confirmation does not match.",
+    };
+  }
+
+  const invitedAdmin = await prisma.adminUser.findUnique({
+    where: { inviteToken },
+    select: {
+      id: true,
+      email: true,
+      passwordHash: true,
+      inviteExpiresAt: true,
+    },
+  });
+
+  if (!invitedAdmin || invitedAdmin.passwordHash) {
+    return {
+      success: false,
+      message: "This invite link is invalid or has already been used.",
+    };
+  }
+
+  if (invitedAdmin.inviteExpiresAt && invitedAdmin.inviteExpiresAt < new Date()) {
+    return {
+      success: false,
+      message: "This invite link has expired. Ask an existing admin to issue a fresh one.",
+    };
+  }
+
+  await prisma.adminUser.update({
+    where: { id: invitedAdmin.id },
+    data: {
+      firstName,
+      lastName,
+      passwordHash: hashPassword(password),
+      inviteToken: null,
+      inviteExpiresAt: null,
+      activatedAt: new Date(),
+    },
+  });
+
+  await prisma.adminSession.deleteMany({
+    where: { userId: invitedAdmin.id },
+  });
+
+  await createAdminSession(invitedAdmin.id);
+
+  revalidatePath("/admin/access");
+  revalidatePath("/admin");
+
   redirect("/admin");
 }
 
