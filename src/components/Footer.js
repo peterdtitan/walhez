@@ -4,10 +4,17 @@ import React from 'react';
 import Link from 'next/link';
 import { RiFacebookBoxLine, RiTwitterLine, RiInstagramLine } from 'react-icons/ri';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
+
   return (
-    <div className="flex flex-col w-full bg-[#1E2D44] text-slate-300 font-montserrat pt-20 p-16 pb-8 gap-10 font-thin">
+    <div className="flex flex-col w-full bg-[#1E2D44] text-slate-300 font-montserrat pt-20 p-16 pb-8 gap-10 font-thin print:hidden">
       <div className="grid grid-cols-2 gap-6 md:flex md:justify-between md:items-start">
         <div className="w-[300px] h-[200px] hidden md:flex items-center col-span-2 relative -mt-16">
           <Image 
@@ -26,9 +33,10 @@ export default function Footer() {
         <div className="flex flex-col gap-2">
           <h2 className="text-base tracking-widest font-medium hover:text-yellow-400">SITEMAP</h2>
           <ul className="text-sm">
-            <li><Link href="/" className="hover:text-yellow-400">Services</Link></li>
-            <li><Link href="/" className="hover:text-yellow-400">Equipments</Link></li>
-            <li><Link href="/" className="hover:text-yellow-400">The Team</Link></li>
+            <li><Link href="/services" className="hover:text-yellow-400">Services</Link></li>
+            <li><Link href="/equipment" className="hover:text-yellow-400">Equipments</Link></li>
+            <li><Link href="/projects" className="hover:text-yellow-400">Projects</Link></li>
+            <li><Link href="/contact" className="hover:text-yellow-400">Contact</Link></li>
           </ul>
         </div>
 
