@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Admin Access | Walhez",
+  title: "Admin Access",
   description: "Invite and manage Walhez administrators.",
 };
 

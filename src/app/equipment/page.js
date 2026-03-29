@@ -4,7 +4,7 @@ import { getAllEquipment } from "@/lib/walhez-data";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Equipment | Walhez",
+  title: "Equipment",
   description: "Browse Walhez equipment sourced from the server database.",
 };
 

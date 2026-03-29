@@ -6,7 +6,7 @@ import { getAuthenticatedAdmin, getInvitedAdminForSetup } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Admin Login | Walhez",
+  title: "Admin Login",
   description: "Secure login for Walhez administrators.",
 };
 

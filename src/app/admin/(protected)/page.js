@@ -5,7 +5,7 @@ import { getAdminDashboardData } from "@/lib/walhez-data";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Admin Dashboard | Walhez",
+  title: "Admin Dashboard",
   description: "Manage equipment records and financial reports.",
 };
 

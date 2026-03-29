@@ -5,7 +5,7 @@ import ReportPdfButton from "@/components/ReportPdfButton";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Admin Reports PDF | Walhez",
+  title: "Admin Reports PDF",
   description: "Print-friendly protected equipment income and expense reporting.",
 };
 

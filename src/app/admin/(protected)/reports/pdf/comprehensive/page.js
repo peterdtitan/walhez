@@ -5,7 +5,7 @@ import { getComprehensiveReportData } from "@/lib/walhez-data";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Comprehensive Report PDF | Walhez",
+  title: "Comprehensive Report PDF",
   description: "Print-friendly comprehensive export of all Walhez report data.",
 };
 
